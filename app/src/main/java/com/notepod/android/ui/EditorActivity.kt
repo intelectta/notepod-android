@@ -10,10 +10,6 @@ import com.notepod.android.data.NoteDatabase
 import com.notepod.android.data.NoteRepository
 import com.notepod.android.databinding.ActivityEditorBinding
 
-/**
- * Full-screen editor for a single note.
- * Saves on back-press / up-press automatically.
- */
 class EditorActivity : AppCompatActivity() {
 
     companion object {
@@ -22,47 +18,40 @@ class EditorActivity : AppCompatActivity() {
         const val EXTRA_CONTENT = "content"
     }
 
-    private lateinit var b: ActivityEditorBinding
+    private lateinit var binding: ActivityEditorBinding
     private lateinit var noteId: String
 
     private val vm: MainViewModel by viewModels {
-        val repo = NoteRepository(NoteDatabase.getInstance(applicationContext).noteDao())
-        MainViewModelFactory(repo)
+        MainViewModelFactory(NoteRepository(NoteDatabase.getInstance(applicationContext).noteDao()))
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        b = ActivityEditorBinding.inflate(layoutInflater)
-        setContentView(b.root)
-        setSupportActionBar(b.toolbar)
+        binding = ActivityEditorBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.title = ""
 
         noteId = intent.getStringExtra(EXTRA_NOTE_ID) ?: run { finish(); return }
-        b.editTitle.setText(intent.getStringExtra(EXTRA_TITLE) ?: "")
-        b.editContent.setText(intent.getStringExtra(EXTRA_CONTENT) ?: "")
-
-        supportActionBar?.title = ""  // title lives in the EditText
+        binding.editTitle.setText(intent.getStringExtra(EXTRA_TITLE) ?: "")
+        binding.editContent.setText(intent.getStringExtra(EXTRA_CONTENT) ?: "")
     }
 
-    // ── Save ──────────────────────────────────────────────────────────────────
-
     private fun save() {
-        val title = b.editTitle.text.toString().trim().ifEmpty { "Untitled" }
-        val content = b.editContent.text.toString()
+        val title = binding.editTitle.text.toString().trim().ifEmpty { "Untitled" }
+        val content = binding.editContent.text.toString()
         vm.saveNote(noteId, title, content)
     }
 
-    // ── Navigation / menu ─────────────────────────────────────────────────────
-
     override fun onSupportNavigateUp(): Boolean {
-        save()
-        finish()
-        return true
+        save(); finish(); return true
     }
 
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
         save()
+        @Suppress("DEPRECATION")
         super.onBackPressed()
     }
 
