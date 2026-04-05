@@ -5,7 +5,6 @@ import java.util.UUID
 class NoteRepository(private val dao: NoteDao) {
 
     fun getRootNotes() = dao.getRootNotes()
-    fun getChildren(parentId: String) = dao.getChildren(parentId)
 
     suspend fun getFlatTree(): List<FlatNode> {
         val result = mutableListOf<FlatNode>()
@@ -13,14 +12,16 @@ class NoteRepository(private val dao: NoteDao) {
         return result
     }
 
-    // Private recursive helper — avoids local-suspend-fun edge cases
     private suspend fun walkTree(
         parentId: String?,
         depth: Int,
         result: MutableList<FlatNode>
     ) {
-        val notes = if (parentId == null) dao.getRootNotesSync()
-                    else dao.getChildrenSync(parentId)
+        val notes = if (parentId == null) {
+            dao.getRootNotesSync()
+        } else {
+            dao.getChildrenSync(parentId)
+        }
         for (note in notes) {
             val childCount = dao.childCount(note.id)
             result.add(FlatNode(note, depth, childCount))
@@ -30,14 +31,16 @@ class NoteRepository(private val dao: NoteDao) {
         }
     }
 
-    suspend fun addNote(parentId: String?, title: String, content: String = ""): Note {
-        val maxOrder = if (parentId == null) dao.maxRootOrder()
-                       else dao.maxChildOrder(parentId)
+    suspend fun addNote(parentId: String?, title: String): Note {
+        val maxOrder = if (parentId == null) {
+            dao.maxRootOrder()
+        } else {
+            dao.maxChildOrder(parentId)
+        }
         val note = Note(
             id = UUID.randomUUID().toString(),
             parentId = parentId,
             title = title,
-            content = content,
             sortOrder = (maxOrder ?: -1) + 1
         )
         dao.insert(note)
@@ -53,7 +56,10 @@ class NoteRepository(private val dao: NoteDao) {
         stack.add(id)
         while (stack.isNotEmpty()) {
             val current = stack.removeLast()
-            dao.getChildIds(current).forEach { stack.add(it) }
+            val children = dao.getChildIds(current)
+            for (child in children) {
+                stack.add(child)
+            }
             dao.deleteById(current)
         }
     }
@@ -62,7 +68,9 @@ class NoteRepository(private val dao: NoteDao) {
         dao.update(note.copy(isExpanded = !note.isExpanded))
     }
 
-    suspend fun getNoteById(id: String) = dao.getNoteById(id)
+    suspend fun getNoteById(id: String): Note? {
+        return dao.getNoteById(id)
+    }
 }
 
 data class FlatNode(
