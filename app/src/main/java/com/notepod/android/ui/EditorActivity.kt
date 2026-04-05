@@ -18,52 +18,39 @@ class EditorActivity : AppCompatActivity() {
         const val EXTRA_CONTENT = "content"
     }
 
-    private lateinit var binding: ActivityEditorBinding
+    private lateinit var b: ActivityEditorBinding
     private lateinit var noteId: String
-
     private val vm: MainViewModel by viewModels {
         MainViewModelFactory(NoteRepository(NoteDatabase.getInstance(applicationContext).noteDao()))
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        binding = ActivityEditorBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-        setSupportActionBar(binding.toolbar)
+    override fun onCreate(s: Bundle?) {
+        super.onCreate(s)
+        b = ActivityEditorBinding.inflate(layoutInflater)
+        setContentView(b.root)
+        setSupportActionBar(b.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        supportActionBar?.title = ""
-
         noteId = intent.getStringExtra(EXTRA_NOTE_ID) ?: run { finish(); return }
-        binding.editTitle.setText(intent.getStringExtra(EXTRA_TITLE) ?: "")
-        binding.editContent.setText(intent.getStringExtra(EXTRA_CONTENT) ?: "")
+        b.editTitle.setText(intent.getStringExtra(EXTRA_TITLE) ?: "")
+        b.editContent.setText(intent.getStringExtra(EXTRA_CONTENT) ?: "")
     }
 
     private fun save() {
-        val title = binding.editTitle.text.toString().trim().ifEmpty { "Untitled" }
-        val content = binding.editContent.text.toString()
-        vm.saveNote(noteId, title, content)
+        vm.saveNote(noteId,
+            b.editTitle.text.toString().trim().ifEmpty { "Untitled" },
+            b.editContent.text.toString())
     }
 
-    override fun onSupportNavigateUp(): Boolean {
-        save(); finish(); return true
-    }
+    override fun onSupportNavigateUp(): Boolean { save(); finish(); return true }
 
     @Deprecated("Deprecated in Java")
-    override fun onBackPressed() {
-        save()
-        @Suppress("DEPRECATION")
-        super.onBackPressed()
-    }
+    override fun onBackPressed() { save(); @Suppress("DEPRECATION") super.onBackPressed() }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menuInflater.inflate(R.menu.menu_editor, menu)
-        return true
+        menuInflater.inflate(R.menu.menu_editor, menu); return true
     }
-
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
-            R.id.action_save -> { save(); finish(); true }
-            else -> super.onOptionsItemSelected(item)
-        }
+        if (item.itemId == R.id.action_save) { save(); finish(); return true }
+        return super.onOptionsItemSelected(item)
     }
 }
