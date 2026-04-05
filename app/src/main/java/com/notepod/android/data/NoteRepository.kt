@@ -2,31 +2,32 @@ package com.notepod.android.data
 
 import java.util.UUID
 
-/**
- * Single source of truth for note operations.
- * All coroutine-based – call from ViewModel scope.
- */
 class NoteRepository(private val dao: NoteDao) {
 
     fun getRootNotes() = dao.getRootNotes()
     fun getChildren(parentId: String) = dao.getChildren(parentId)
 
-    /** Flatten the entire tree depth-first for the RecyclerView adapter. */
     suspend fun getFlatTree(): List<FlatNode> {
         val result = mutableListOf<FlatNode>()
-        suspend fun walk(parentId: String?, depth: Int) {
-            val notes = if (parentId == null) dao.getRootNotesSync()
-                        else dao.getChildrenSync(parentId)
-            for (note in notes) {
-                val childCount = dao.childCount(note.id)
-                result.add(FlatNode(note, depth, childCount))
-                if (note.isExpanded && childCount > 0) {
-                    walk(note.id, depth + 1)
-                }
+        walkTree(null, 0, result)
+        return result
+    }
+
+    // Private recursive helper — avoids local-suspend-fun edge cases
+    private suspend fun walkTree(
+        parentId: String?,
+        depth: Int,
+        result: MutableList<FlatNode>
+    ) {
+        val notes = if (parentId == null) dao.getRootNotesSync()
+                    else dao.getChildrenSync(parentId)
+        for (note in notes) {
+            val childCount = dao.childCount(note.id)
+            result.add(FlatNode(note, depth, childCount))
+            if (note.isExpanded && childCount > 0) {
+                walkTree(note.id, depth + 1, result)
             }
         }
-        walk(null, 0)
-        return result
     }
 
     suspend fun addNote(parentId: String?, title: String, content: String = ""): Note {
@@ -47,7 +48,6 @@ class NoteRepository(private val dao: NoteDao) {
         dao.update(note.copy(updatedAt = System.currentTimeMillis()))
     }
 
-    /** Recursively delete note and all descendants */
     suspend fun deleteSubtree(id: String) {
         val stack = ArrayDeque<String>()
         stack.add(id)
@@ -65,7 +65,6 @@ class NoteRepository(private val dao: NoteDao) {
     suspend fun getNoteById(id: String) = dao.getNoteById(id)
 }
 
-/** A note decorated with tree metadata for the flat list adapter */
 data class FlatNode(
     val note: Note,
     val depth: Int,
