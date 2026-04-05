@@ -11,19 +11,15 @@ abstract class NoteDatabase : RoomDatabase() {
     abstract fun noteDao(): NoteDao
 
     companion object {
-        @Volatile
-        private var INSTANCE: NoteDatabase? = null
+        @Volatile private var INSTANCE: NoteDatabase? = null
 
-        fun getInstance(context: Context): NoteDatabase {
-            return INSTANCE ?: synchronized(this) {
-                val instance = Room.databaseBuilder(
+        fun getInstance(context: Context): NoteDatabase =
+            INSTANCE ?: synchronized(this) {
+                INSTANCE ?: Room.databaseBuilder(
                     context.applicationContext,
                     NoteDatabase::class.java,
                     "notepod.db"
-                ).build()
-                INSTANCE = instance
-                instance
+                ).build().also { INSTANCE = it }
             }
-        }
     }
 }
