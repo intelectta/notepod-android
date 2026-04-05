@@ -12,49 +12,38 @@ import kotlinx.coroutines.launch
 
 class MainViewModel(private val repo: NoteRepository) : ViewModel() {
 
-    private val _flatTree = MutableLiveData<List<FlatNode>>()
-    val flatTree: LiveData<List<FlatNode>> = _flatTree
+    private val _tree = MutableLiveData<List<FlatNode>>(emptyList())
+    val flatTree: LiveData<List<FlatNode>> = _tree
 
     private val _loading = MutableLiveData(false)
     val loading: LiveData<Boolean> = _loading
 
-    init {
-        refreshTree()
-    }
+    init { refreshTree() }
 
     fun refreshTree() {
         viewModelScope.launch {
             _loading.value = true
-            _flatTree.value = repo.getFlatTree()
+            _tree.value = repo.getFlatTree()
             _loading.value = false
         }
     }
 
     fun addNote(parentId: String?, title: String) {
-        viewModelScope.launch {
-            repo.addNote(parentId, title)
-            refreshTree()
-        }
+        viewModelScope.launch { repo.addNote(parentId, title); refreshTree() }
     }
 
     fun deleteNote(id: String) {
-        viewModelScope.launch {
-            repo.deleteSubtree(id)
-            refreshTree()
-        }
+        viewModelScope.launch { repo.deleteSubtree(id); refreshTree() }
     }
 
     fun toggleExpand(note: Note) {
-        viewModelScope.launch {
-            repo.toggleExpand(note)
-            refreshTree()
-        }
+        viewModelScope.launch { repo.toggleExpand(note); refreshTree() }
     }
 
     fun saveNote(id: String, title: String, content: String) {
         viewModelScope.launch {
-            val existing = repo.getNoteById(id) ?: return@launch
-            repo.updateNote(existing.copy(title = title, content = content))
+            val n = repo.getNoteById(id) ?: return@launch
+            repo.updateNote(n.copy(title = title, content = content))
             refreshTree()
         }
     }
@@ -62,7 +51,5 @@ class MainViewModel(private val repo: NoteRepository) : ViewModel() {
 
 class MainViewModelFactory(private val repo: NoteRepository) : ViewModelProvider.Factory {
     @Suppress("UNCHECKED_CAST")
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        return MainViewModel(repo) as T
-    }
+    override fun <T : ViewModel> create(modelClass: Class<T>): T = MainViewModel(repo) as T
 }
