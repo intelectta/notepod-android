@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Each row is:
+    [indent spacer] [expand chevron] [title + preview] [child-count badge]
+-->
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:minHeight="56dp"
+    android:background="?attr/selectableItemBackground"
+    android:paddingTop="8dp"
+    android:paddingBottom="8dp"
+    android:paddingEnd="12dp">
+
+    <!-- Dynamic indent spacer: width set programmatically per depth -->
+    <View
+        android:id="@+id/indentSpacer"
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+    <!-- Expand / collapse chevron -->
+    <TextView
+        android:id="@+id/expandBtn"
+        android:layout_width="28dp"
+        android:layout_height="28dp"
+        android:gravity="center"
+        android:textSize="18sp"
+        android:text="▸"
+        android:textColor="?attr/colorPrimary"
+        app:layout_constraintStart_toEndOf="@id/indentSpacer"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+    <!-- Title -->
+    <TextView
+        android:id="@+id/noteTitle"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:textColor="?android:attr/textColorPrimary"
+        app:layout_constraintStart_toEndOf="@id/expandBtn"
+        app:layout_constraintEnd_toStartOf="@id/childCountBadge"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/notePreview" />
+
+    <!-- Content preview -->
+    <TextView
+        android:id="@+id/notePreview"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:textSize="13sp"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:textColor="?android:attr/textColorSecondary"
+        app:layout_constraintStart_toEndOf="@id/expandBtn"
+        app:layout_constraintEnd_toStartOf="@id/childCountBadge"
+        app:layout_constraintTop_toBottomOf="@id/noteTitle"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+    <!-- Child count badge -->
+    <TextView
+        android:id="@+id/childCountBadge"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:gravity="center"
+        android:textSize="11sp"
+        android:textColor="@android:color/white"
+        android:background="@drawable/badge_background"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:visibility="gone" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
