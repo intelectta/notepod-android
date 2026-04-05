@@ -1,6 +1,10 @@
 package com.notepod.android.ui
 
-import androidx.lifecycle.*
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
 import com.notepod.android.data.FlatNode
 import com.notepod.android.data.Note
 import com.notepod.android.data.NoteRepository
@@ -57,8 +61,8 @@ class MainViewModel(private val repo: NoteRepository) : ViewModel() {
 }
 
 class MainViewModelFactory(private val repo: NoteRepository) : ViewModelProvider.Factory {
+    @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        @Suppress("UNCHECKED_CAST")
         return MainViewModel(repo) as T
     }
 }
