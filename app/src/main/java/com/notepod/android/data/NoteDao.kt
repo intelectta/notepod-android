@@ -13,9 +13,6 @@ interface NoteDao {
     @Query("SELECT * FROM notes WHERE parentId IS NULL ORDER BY sortOrder ASC")
     fun getRootNotes(): LiveData<List<Note>>
 
-    @Query("SELECT * FROM notes WHERE parentId = :parentId ORDER BY sortOrder ASC")
-    fun getChildren(parentId: String): LiveData<List<Note>>
-
     @Query("SELECT * FROM notes WHERE parentId IS NULL ORDER BY sortOrder ASC")
     suspend fun getRootNotesSync(): List<Note>
 
